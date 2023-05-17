@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Permission {
+  id          Int     @id @default(autoincrement())
+  title       String  @unique
+  description String?
+
+  roles Role[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Role {
+  id          Int     @id @default(autoincrement())
+  title       String  @unique
+  description String?
+
+  permissions Permission[]
+  users       User[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  phone    String? @unique
+  password String
+
+  firstName String
+  lastName  String
+
+  isVerified Boolean @default(false)
+  isBlocked  Boolean @default(false)
+  roles      Role[]
+
+  UserProfile UserProfile?
+  Login       Login[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserProfile {
+  id           Int       @id @default(autoincrement())
+  firstName    String
+  lastName     String
+  occupation   String?
+  avatar       String?
+  state        String?
+  city         String?
+  country      String?
+  addressLine1 String?
+  addressLine2 String?
+  zipCode      String?
+  phone        String?
+  dateOfBirth  DateTime?
+  gender       String
+
+  userId Int  @unique
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade) //Delete user profile if user is deleted
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum VerificationType {
+  EMAIL
+  PHONE
+}
+
+model VerificationRequest {
+  id         Int              @id @default(autoincrement())
+  type       VerificationType
+  identifier String
+  token      String
+  expiresAt  DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Login {
+  id     Int  @id @default(autoincrement())
+  userId Int  @unique
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  lastAtempt     DateTime
+  isSuccessful   Boolean
+  browserType    String?
+  browserVersion String?
+  osType         String?
+  osVersion      String?
+  deviceType     String?
+  deviceModel    String?
+  ipAddress      String?
+  location       String?
+}
