@@ -57,6 +57,7 @@
     "dotenv-cli": "^7.2.1",
     "eslint": "^8.0.1",
     "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-unused-imports": "^2.0.0",
     "husky": "^8.0.3",
@@ -93,11 +94,11 @@
   },
   "lint-staged": {
     "src/**/*.{js,ts,json}": [
-      "eslint --fix",
+      "yarn lint",
       "prettier --write"
     ],
     "./test/**/*.{js,ts}": [
-      "eslint --fix",
+      "yarn lint",
       "prettier --write"
     ]
   }
