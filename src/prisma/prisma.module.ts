@@ -4,6 +4,6 @@ import { PrismaService } from 'src/prisma/prisma.service'
 @Global() //This will make this module available to all other modules
 @Module({
   providers: [PrismaService],
-  exports: [],
+  exports: [PrismaService],
 })
 export class PrismaModule {}
