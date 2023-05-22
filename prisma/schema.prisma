@@ -31,19 +31,16 @@ model Role {
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
-  email    String @unique
+  id       Int     @id @default(autoincrement())
+  email    String  @unique
   phone    String? @unique
   password String
-
-  firstName String
-  lastName  String
 
   isVerified Boolean @default(false)
   isBlocked  Boolean @default(false)
   roles      Role[]
 
-  UserProfile UserProfile?
+  userProfile UserProfile?
   Login       Login[]
 
   createdAt DateTime @default(now())
@@ -64,7 +61,7 @@ model UserProfile {
   zipCode      String?
   phone        String?
   dateOfBirth  DateTime?
-  gender       String
+  gender       String?
 
   userId Int  @unique
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade) //Delete user profile if user is deleted
@@ -74,13 +71,13 @@ model UserProfile {
 }
 
 enum VerificationType {
-  EMAIL
-  PHONE
+  Email
+  Phone
 }
 
 model VerificationRequest {
-  id         Int              @id @default(autoincrement())
-  type       VerificationType
+  id         Int               @id @default(autoincrement())
+  type       VerificationType? @default(Email)
   identifier String
   token      String
   expiresAt  DateTime

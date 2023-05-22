@@ -4,7 +4,7 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import * as argon from 'argon2'
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime'
+import { Prisma } from '@prisma/client'
 
 @Injectable()
 export class AuthService {
@@ -32,14 +32,18 @@ export class AuthService {
         data: {
           email,
           password: hash,
-          firstName,
-          lastName,
+          userProfile: {
+            create: {
+              firstName,
+              lastName,
+            },
+          },
         },
       })
 
       return this.signToken(createdUser.id, createdUser.email)
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
           throw new ForbiddenException('Credentials taken')
         }

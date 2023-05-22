@@ -1,7 +1,7 @@
-import { OmitType, PartialType } from '@nestjs/swagger'
+import { PartialType, PickType } from '@nestjs/swagger'
 import { SignupDto } from 'src/auth/dto'
 
-class UpdateDto extends OmitType(SignupDto, ['email', 'password'] as const) {}
+class UpdateDto extends PickType(SignupDto, ['email', 'password'] as const) {}
 
 export class UpdateUserDto extends PartialType(UpdateDto) {
   // PartialType creates a class with all the properties of the original class set to optional.

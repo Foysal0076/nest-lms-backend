@@ -49,12 +49,16 @@ async function main() {
     create: {
       email: adminData.email,
       password: adminData.password,
-      firstName: adminData.firstName,
-      lastName: adminData.lastName,
       phone: adminData.phone,
       roles: {
         connect: {
           id: adminRole.id,
+        },
+      },
+      userProfile: {
+        create: {
+          firstName: adminData.firstName,
+          lastName: adminData.lastName,
         },
       },
     },
