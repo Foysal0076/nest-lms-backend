@@ -34,4 +34,9 @@ export class PrismaService
     // const models = Reflect.ownKeys(this).filter((key) => key[0] !== '_')
     // return Promise.all(models.map((modelKey) => this[modelKey].deleteMany()))
   }
+
+  static getModels() {
+    const models = Reflect.ownKeys(this).filter((key) => key[0] !== '_')
+    return Promise.all(models.map((modelKey) => this[modelKey]))
+  }
 }

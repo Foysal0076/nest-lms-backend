@@ -8,8 +8,9 @@ datasource db {
 }
 
 model Permission {
-  id          Int     @id @default(autoincrement())
-  title       String  @unique
+  id          Int         @id @default(autoincrement())
+  title       TableAccess @default(READ)
+  table       String
   description String?
 
   roles Role[]
@@ -73,6 +74,11 @@ model UserProfile {
 enum VerificationType {
   Email
   Phone
+}
+
+enum TableAccess {
+  READ
+  WRITE
 }
 
 model VerificationRequest {

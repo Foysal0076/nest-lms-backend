@@ -1,25 +1,19 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, TableAccess } from '@prisma/client'
 import * as argon from 'argon2'
 
 const prisma = new PrismaClient()
 
 async function main() {
-  const permission = await prisma.permission.upsert({
-    where: { title: 'Do Anything' },
-    update: {},
-    create: {
-      title: 'Do Anything',
-      description: 'This permission allows the user to do anything',
-      roles: {
-        create: [
-          {
-            title: 'Admin',
-            description: 'This role allows the user to do anything',
-          },
-        ],
-      },
-    },
-  })
+  const tables = ['User', 'Role', 'Permission', 'UserProfile']
+
+  //delete all the data in the database
+  await prisma.$transaction([
+    prisma.user.deleteMany(),
+    prisma.role.deleteMany(),
+    prisma.permission.deleteMany(),
+  ])
+
+  const permissionIds: number[] = []
 
   const adminRole = await prisma.role.upsert({
     where: { title: 'Admin' },
@@ -27,13 +21,73 @@ async function main() {
     create: {
       title: 'Admin',
       description: 'This is the admin role',
+    },
+  })
+
+  // create and assign permission to admin for each table
+  for (const tableName of tables) {
+    const writePermission = await prisma.permission.create({
+      data: {
+        title: TableAccess.WRITE,
+        table: tableName,
+        description: `This permission allows WRITE access to the ${tableName} table`,
+      },
+    })
+    permissionIds.push(writePermission.id)
+
+    const readPermission = await prisma.permission.create({
+      data: {
+        title: TableAccess.READ,
+        table: tableName,
+        description: `This permission allows READ access to the ${tableName} table`,
+      },
+    })
+
+    permissionIds.push(readPermission.id)
+  }
+
+  // assign permissions to admin role
+  await prisma.role.update({
+    where: { id: adminRole.id },
+    data: {
       permissions: {
-        connect: {
-          id: permission.id,
-        },
+        connect: permissionIds.map((id) => ({ id })),
       },
     },
   })
+
+  // const permission = await prisma.permission.upsert({
+  //   where: {},
+  //   update: {},
+  //   create: {
+  //     title: TableAccess.WRITE,
+  //     table: 'User',
+  //     description: 'This permission allows to write access to the User table',
+  //     roles: {
+  //       create: [
+  //         {
+  //           title: 'Admin',
+  //           description:
+  //             'This role allows the user to do anything on the database',
+  //         },
+  //       ],
+  //     },
+  //   },
+  // })
+
+  // const adminRole = await prisma.role.upsert({
+  //   where: { title: 'Admin' },
+  //   update: {},
+  //   create: {
+  //     title: 'Admin',
+  //     description: 'This is the admin role',
+  //     permissions: {
+  //       connect: {
+  //         id: permission.id,
+  //       },
+  //     },
+  //   },
+  // })
 
   const adminData = {
     email: 'admin@nestlms.com',
@@ -43,7 +97,7 @@ async function main() {
     phone: '1234567890',
   }
 
-  const admin = await prisma.user.upsert({
+  await prisma.user.upsert({
     where: { email: adminData.email },
     update: {},
     create: {
@@ -70,6 +124,7 @@ main()
     await prisma.$disconnect()
   })
   .catch(async (e) => {
+    console.log(e)
     await prisma.$disconnect()
     process.exit(1)
   })
