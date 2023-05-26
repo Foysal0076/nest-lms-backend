@@ -45,6 +45,9 @@ model User {
   Login           Login[]
   enrolledCourses Course[]     @relation("StudentCourse")
   taughtCourses   Course[]     @relation("InstructorCourse")
+  completedUnits  Unit[]       @relation("CompletedUnit")
+
+  subscriptions Subscription[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -68,6 +71,67 @@ model UserProfile {
 
   userId Int  @unique
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade) //Delete user profile if user is deleted
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum SubscriptionStatusType {
+  Active
+  Inactive
+  Cancelled
+  Pending
+  Suspended
+  Trial
+  PastDue
+  Free
+}
+
+model Subscription {
+  id          Int                    @id @default(autoincrement())
+  title       String                 @unique
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  nextBilling DateTime
+  status      SubscriptionStatusType
+
+  subscriptionProductId Int                 @unique
+  subscriptionProduct   SubscriptionProduct @relation(fields: [subscriptionProductId], references: [id], onDelete: Cascade)
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SubscriptionProductType {
+  id          Int     @id @default(autoincrement())
+  title       String  @unique
+  description String?
+
+  subscriptionProducts SubscriptionProduct[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SubscriptionProduct {
+  id           Int     @id @default(autoincrement())
+  title        String  @unique
+  description  String?
+  regularPrice Float
+  salePrice    Float?
+  isSiteWide   Boolean @default(false)
+
+  typeId Int
+  type   SubscriptionProductType @relation(fields: [typeId], references: [id])
+
+  courseProviderId Int?
+  courseProvider   CourseProvider? @relation(fields: [courseProviderId], references: [id])
+
+  subscriptions Subscription[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -190,14 +254,16 @@ model Course {
 }
 
 model CourseProvider {
-  id               Int      @id @default(autoincrement())
+  id               Int     @id @default(autoincrement())
   name             String
   icon             String?
   featuredImage    String?
   shortDescription String?
   longDescription  String?
   url              String?
-  courses          Course[]
+
+  courses              Course[]
+  subscriptionProducts SubscriptionProduct[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -289,6 +355,8 @@ model Unit {
   quiz      Quiz?
   resources Resource[]
 
+  completedBy User[] @relation("CompletedUnit")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -365,7 +433,7 @@ model QuizQuestion {
   id          Int     @id @default(autoincrement())
   title       String
   mark        Float   @default(1)
-  isPublished Boolean @default(false)
+  isPublished Boolean @default(true)
   isDeleted   Boolean @default(false)
 
   createdBy Int
@@ -384,7 +452,7 @@ model QuizQuestionOption {
   id          Int     @id @default(autoincrement())
   title       String
   isCorrect   Boolean @default(false)
-  isPublished Boolean @default(false)
+  isPublished Boolean @default(true)
   isDeleted   Boolean @default(false)
 
   createdBy Int
