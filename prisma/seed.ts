@@ -3,15 +3,28 @@ import * as argon from 'argon2'
 
 const prisma = new PrismaClient()
 
+type SchemaTable = {
+  table_name: string
+}
+
 async function main() {
-  const tables = ['User', 'Role', 'Permission', 'UserProfile']
+  let allTables: SchemaTable[] =
+    await prisma.$queryRaw`SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'`
+
+  allTables = allTables.filter((table) => table.table_name.at(0) !== '_')
+
+  const tableNames = allTables.map((table) => table.table_name)
 
   //delete all the data in the database
-  await prisma.$transaction([
-    prisma.user.deleteMany(),
-    prisma.role.deleteMany(),
-    prisma.permission.deleteMany(),
-  ])
+  for await (const tableName of tableNames) {
+    await prisma[tableName].deleteMany()
+  }
+
+  // await prisma.$transaction([
+  //   prisma.user.deleteMany(),
+  //   prisma.role.deleteMany(),
+  //   prisma.permission.deleteMany(),
+  // ])
 
   const permissionIds: number[] = []
 
@@ -24,8 +37,26 @@ async function main() {
     },
   })
 
+  await prisma.role.upsert({
+    where: { title: 'Student' },
+    update: {},
+    create: {
+      title: 'Student',
+      description: 'This is the general and default role of a user',
+    },
+  })
+
+  await prisma.role.upsert({
+    where: { title: 'Instructor' },
+    update: {},
+    create: {
+      title: 'Instructor',
+      description: 'An instructor can create courses and lessons',
+    },
+  })
+
   // create and assign permission to admin for each table
-  for (const tableName of tables) {
+  for (const tableName of tableNames) {
     const writePermission = await prisma.permission.create({
       data: {
         title: TableAccess.WRITE,
