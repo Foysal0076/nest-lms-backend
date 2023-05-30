@@ -12,5 +12,8 @@
         }
       }
     ]
+  },
+  "moduleNameMapper": {
+    "@app/(.*)": "src/$1"
   }
 }
