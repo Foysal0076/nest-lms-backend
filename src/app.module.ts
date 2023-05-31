@@ -6,6 +6,7 @@ import { UserModule } from 'src/user/user.module'
 import { UploadFileModule } from './upload-file/upload-file.module'
 import { ServeStaticModule } from '@nestjs/serve-static'
 import { join } from 'path'
+import { CourseCategoryModule } from './course-category/course-category.module'
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { join } from 'path'
     AuthModule,
     UserModule,
     UploadFileModule,
+    CourseCategoryModule,
   ],
   controllers: [],
   providers: [],

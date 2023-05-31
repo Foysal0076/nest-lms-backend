@@ -37,7 +37,7 @@ async function main() {
     },
   })
 
-  await prisma.role.upsert({
+  const studentRole = await prisma.role.upsert({
     where: { title: 'Student' },
     update: {},
     create: {
@@ -46,7 +46,7 @@ async function main() {
     },
   })
 
-  await prisma.role.upsert({
+  const instructorRole = await prisma.role.upsert({
     where: { title: 'Instructor' },
     update: {},
     create: {
@@ -126,6 +126,23 @@ async function main() {
     firstName: 'Admin',
     lastName: 'User',
     phone: '1234567890',
+    isVerified: true,
+  }
+
+  const studentData = {
+    email: 'student@nestlms.com',
+    password: await argon.hash('password'),
+    firstName: 'Student',
+    lastName: 'User',
+    phone: '1234567890',
+  }
+
+  const instructorData = {
+    email: 'instructor@nestlms.com',
+    password: await argon.hash('password'),
+    firstName: 'Instructor',
+    lastName: 'User',
+    phone: '1234567890',
   }
 
   await prisma.user.upsert({
@@ -135,6 +152,7 @@ async function main() {
       email: adminData.email,
       password: adminData.password,
       phone: adminData.phone,
+      isVerified: adminData.isVerified,
       roles: {
         connect: {
           id: adminRole.id,
@@ -144,6 +162,48 @@ async function main() {
         create: {
           firstName: adminData.firstName,
           lastName: adminData.lastName,
+        },
+      },
+    },
+  })
+
+  await prisma.user.upsert({
+    where: { email: studentData.email },
+    update: {},
+    create: {
+      email: studentData.email,
+      password: studentData.password,
+      phone: studentData.phone,
+      roles: {
+        connect: {
+          id: studentRole.id,
+        },
+      },
+      userProfile: {
+        create: {
+          firstName: studentData.firstName,
+          lastName: studentData.lastName,
+        },
+      },
+    },
+  })
+
+  await prisma.user.upsert({
+    where: { email: instructorData.email },
+    update: {},
+    create: {
+      email: instructorData.email,
+      password: instructorData.password,
+      phone: instructorData.phone,
+      roles: {
+        connect: {
+          id: instructorRole.id,
+        },
+      },
+      userProfile: {
+        create: {
+          firstName: instructorData.firstName,
+          lastName: instructorData.lastName,
         },
       },
     },
