@@ -1,96 +1,83 @@
 import {
   ClassSerializerInterceptor,
   Controller,
+  Get,
   HttpStatus,
+  Param,
   ParseFilePipeBuilder,
   Post,
-  UnsupportedMediaTypeException,
+  Res,
   UploadedFile,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common'
 import { UploadFileService } from './upload-file.service'
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express'
-import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger'
-import { diskStorage } from 'multer'
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger'
 // import path from 'path' //Doesn't work
 import path = require('path')
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface'
+import { generateMulterOption } from 'src/upload-file/helper'
+import { Observable, of } from 'rxjs'
 
-const acceptedFileFormats =
-  /.(jpg|JPG|jpeg|JPEG|png|PNG|webp|WEBP|gif|aac|mp3|doc|pdf|html|md|mp4|wmv|avi)/
-
-const maxFileSize = 1024 * 1024 * 2 // 2MB
+const maxFileSize = 1024 * 1024 * 500 // 500MB
 const maxFiles = 5
 
 const saveDestination = './uploads'
+const acceptedFileFormats = [
+  'jpg',
+  'JPG',
+  'jpeg',
+  'JPEG',
+  'png',
+  'PNG',
+  'webp',
+  'WEBP',
+  'gif',
+  'aac',
+  'mp3',
+  'doc',
+  'pdf',
+  'html',
+  'md',
+  'mp4',
+  'wmv',
+  'avi',
+]
 
-export const multerOptionForFile: MulterOptions = {
-  storage: diskStorage({
-    destination: saveDestination,
-    filename: (req, file, cb) => {
-      const fileName: string =
-        path.parse(file.originalname).name.replace(/\s/g, '') +
-        '_' +
-        new Date().getTime()
-      const extension: string = path.parse(file.originalname).ext
-      cb(null, `${fileName}${extension}`)
-    },
-  }),
-  limits: {
-    files: 1,
-    fileSize: maxFileSize,
-  },
-  fileFilter: (req, file, cb) => {
-    if (!file.originalname.match(acceptedFileFormats)) {
-      return cb(
-        new UnsupportedMediaTypeException(
-          'Allowed file types are jpg|JPG|jpeg|JPEG|png|PNG|webp|WEBP|gif|aac|mp3|doc|pdf|html|md|mp4|wmv|avi'
-        ),
-        false
-      )
-    }
-    cb(null, true)
-  },
-}
+const multerOptionForFile: MulterOptions = generateMulterOption(
+  acceptedFileFormats,
+  saveDestination,
+  maxFileSize
+)
 
-export const multerOptionForFiles: MulterOptions = {
-  storage: diskStorage({
-    destination: saveDestination,
-    filename: (req, file, cb) => {
-      const fileName: string =
-        path.parse(file.originalname).name.replace(/\s/g, '') +
-        '_' +
-        new Date().getTime()
-      const extension: string = path.parse(file.originalname).ext
-      cb(null, `${fileName}${extension}`)
-    },
-  }),
-  limits: {
-    files: maxFiles,
-    fileSize: 1024 * 1024 * 5,
-  },
-  fileFilter: (req, file, cb) => {
-    if (!file.originalname.match(acceptedFileFormats)) {
-      return cb(
-        new UnsupportedMediaTypeException(
-          'Allowed file types are jpg|JPG|jpeg|JPEG|png|PNG|webp|WEBP|gif|aac|mp3|doc|pdf|html|md|mp4|wmv|avi'
-        ),
-        false
-      )
-    }
-    cb(null, true)
-  },
-}
+const multerOptionForFiles: MulterOptions = generateMulterOption(
+  acceptedFileFormats,
+  saveDestination,
+  maxFileSize,
+  5
+)
+
+const avatarMulterOptions = generateMulterOption(
+  ['png', 'jpg', 'jpeg', 'gif'],
+  './uploads/avatar'
+)
 
 @ApiTags('File Upload')
+@Controller('')
 @UseInterceptors(ClassSerializerInterceptor)
-@Controller('upload')
 export class UploadFileController {
   constructor(private readonly uploadFileService: UploadFileService) {}
 
-  @Post('file')
+  @Post('upload/file')
   @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Upload File' })
   @ApiBody({
     schema: {
       type: 'object',
@@ -108,10 +95,7 @@ export class UploadFileController {
   async uploadFile(
     @UploadedFile(
       new ParseFilePipeBuilder()
-        .addFileTypeValidator({
-          fileType: acceptedFileFormats,
-        })
-        .addMaxSizeValidator({ maxSize: 1024 * 1024 * 2 })
+        .addMaxSizeValidator({ maxSize: maxFileSize })
         .build({
           errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
         })
@@ -121,8 +105,9 @@ export class UploadFileController {
     return this.uploadFileService.uploadFile(file)
   }
 
-  @Post('files')
+  @Post('upload/files')
   @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Upload Files' })
   @ApiBody({
     schema: {
       type: 'object',
@@ -137,5 +122,46 @@ export class UploadFileController {
   @UseInterceptors(FilesInterceptor('files', maxFiles, multerOptionForFiles))
   async uploadFiles(@UploadedFiles() files: Array<Express.Multer.File>) {
     return this.uploadFileService.uploadFiles(files)
+  }
+
+  @Post('upload/avatar')
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Upload Avatar' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('avatar', avatarMulterOptions))
+  async uploadAvatar(
+    @UploadedFile()
+    file: Express.Multer.File
+  ) {
+    return this.uploadFileService.uploadAvatar(file)
+  }
+
+  @Get('uploads/avatar/:fileName')
+  @ApiOperation({ summary: 'Fetch Avatar' })
+  @ApiResponse({
+    content: {
+      image: {
+        schema: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  getAvatar(
+    @Param('fileName') fileName: string,
+    @Res() res
+  ): Observable<object> {
+    return of(res.sendFile(process.cwd() + '/uploads/avatar/' + fileName))
   }
 }

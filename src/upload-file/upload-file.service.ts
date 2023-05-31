@@ -24,4 +24,10 @@ export class UploadFileService {
     )
     return new UploadFilesResponse(fileUrls)
   }
+
+  uploadAvatar(file: Express.Multer.File): UploadFileResponse {
+    const domainUrl = this.configService.get('DOMAIN_URL')
+    const fileUrl = `${domainUrl}/uploads/avatar/${file.filename}`
+    return new UploadFileResponse(fileUrl)
+  }
 }
