@@ -145,6 +145,7 @@ enum VerificationType {
 enum TableAccess {
   READ
   WRITE
+  DELETE
 }
 
 model VerificationRequest {

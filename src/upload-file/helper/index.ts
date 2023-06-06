@@ -10,7 +10,6 @@ export const generateMulterOption = (
 ) => {
   const acceptFileTypesString = acceptFileTypes.join('|')
   const acceptedFileFormats = new RegExp(`.(${acceptFileTypesString})`, 'i')
-  console.log(acceptedFileFormats)
 
   return {
     storage: diskStorage({
