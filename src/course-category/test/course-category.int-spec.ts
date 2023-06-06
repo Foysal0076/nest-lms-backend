@@ -274,7 +274,10 @@ describe('Course Category integration tests', () => {
         .expectStatus(HttpStatus.FORBIDDEN)
     })
 
-    it.todo('should get all course categories by any user')
+    it('should get all course categories by any user', () => {
+      return pactum.spec().get('/course-categories').expectStatus(HttpStatus.OK)
+    })
+
     it.todo('should get course category by search query by any user')
   })
 })
