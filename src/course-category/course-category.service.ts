@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -6,12 +7,18 @@ import {
 } from '@nestjs/common'
 import { CourseCategory } from '@prisma/client'
 import {
+  CourseCategoryDto,
   CreateCourseCategoryDto,
   UpdateCourseCategoryDto,
 } from 'src/course-category/dto'
 import { generateSlug } from 'src/utils/helpers'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { UserRole } from 'src/utils/types/auth'
+import {
+  PaginationDto,
+  PaginationMetaDto,
+  PaginationOptionsDto,
+} from 'src/shared/dto/pagination'
 
 @Injectable()
 export class CourseCategoryService {
@@ -21,7 +28,7 @@ export class CourseCategoryService {
     userId: number,
     roles: UserRole[],
     createCourseCategoryDto: CreateCourseCategoryDto
-  ): Promise<CourseCategory> {
+  ): Promise<CourseCategoryDto> {
     try {
       const slug = generateSlug(createCourseCategoryDto.title)
       const createdCourseCategory = await this.prisma.courseCategory.create({
@@ -42,7 +49,7 @@ export class CourseCategoryService {
     roles: string[],
     categoryId: number,
     updateCourseCategoryDto: UpdateCourseCategoryDto
-  ): Promise<CourseCategory> {
+  ): Promise<CourseCategoryDto> {
     const foundCourseCategory = await this.prisma.courseCategory.findUnique({
       where: {
         id: categoryId,
@@ -70,12 +77,64 @@ export class CourseCategoryService {
     return updatedCourseCategory
   }
 
-  findAll() {
-    return `This action returns all courseCategory`
+  async findAll(
+    paginationOptions: PaginationOptionsDto
+  ): Promise<PaginationDto<CourseCategory>> {
+    let courseCategories: CourseCategory[]
+    let total: number
+
+    if (paginationOptions.search) {
+      courseCategories = await this.prisma.courseCategory.findMany({
+        take: paginationOptions.perPage,
+        skip: paginationOptions.skip,
+        orderBy: {
+          [paginationOptions.orderBy]: paginationOptions.order,
+        },
+        where: {
+          title: {
+            search: paginationOptions.search,
+          },
+        },
+      })
+      total = await this.prisma.courseCategory.count({
+        where: {
+          title: {
+            search: paginationOptions.search,
+          },
+        },
+      })
+    } else {
+      courseCategories = await this.prisma.courseCategory.findMany({
+        take: paginationOptions.perPage,
+        skip: paginationOptions.skip,
+        orderBy: {
+          [paginationOptions.orderBy]: paginationOptions.order,
+        },
+      })
+      total = await this.prisma.courseCategory.count()
+    }
+
+    const paginationMeta = new PaginationMetaDto({
+      total,
+      paginationOptionsDto: paginationOptions,
+    })
+    const paginatedResponse = new PaginationDto(
+      courseCategories,
+      paginationMeta
+    )
+    return paginatedResponse
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} courseCategory`
+  async findOne(id: number): Promise<CourseCategoryDto> {
+    const foundCourseCategory = await this.prisma.courseCategory.findUnique({
+      where: {
+        id,
+      },
+    })
+    if (!foundCourseCategory) {
+      throw new NotFoundException('Course Category not found')
+    }
+    return foundCourseCategory
   }
 
   async remove(userId: number, categoryId: number): Promise<void> {
@@ -105,12 +164,54 @@ export class CourseCategoryService {
 
   async removeMany(userId: number, categoryIds: number[]): Promise<void> {
     if (categoryIds.length === 0) {
-      throw new NotFoundException('No course category found')
+      throw new BadRequestException('You must provide at least one category id')
     }
+
     try {
-      categoryIds.forEach(async (categoryId) =>
-        this.deleteOne(userId, categoryId)
+      const foundCourseCategories = await this.prisma.courseCategory.findMany({
+        where: {
+          AND: [
+            {
+              id: {
+                in: categoryIds,
+              },
+            },
+            {
+              createdById: userId,
+            },
+          ],
+        },
+      })
+
+      const foundCourseCategoryIds = foundCourseCategories.map(
+        (category) => category.id
       )
+
+      const missingCourseCategoryIds = categoryIds.filter(
+        (categoryId) => !foundCourseCategoryIds.includes(categoryId)
+      )
+
+      if (foundCourseCategories.length !== categoryIds.length) {
+        const errorMessage = `Course Category not found: ${missingCourseCategoryIds.join(
+          ' '
+        )}`
+        throw new NotFoundException(errorMessage)
+      }
+
+      await this.prisma.courseCategory.deleteMany({
+        where: {
+          AND: [
+            {
+              id: {
+                in: categoryIds,
+              },
+            },
+            {
+              createdById: userId,
+            },
+          ],
+        },
+      })
     } catch (error) {
       throw error
     }

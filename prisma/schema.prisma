@@ -1,5 +1,11 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
+}
+
+generator prismaClassGenerator {
+  provider = "prisma-class-generator"
+  output   = "../src/generator/prisma-class"
 }
 
 datasource db {

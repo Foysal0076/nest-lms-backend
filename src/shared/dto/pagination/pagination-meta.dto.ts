@@ -3,16 +3,16 @@ import { PaginationParametersDto } from './pagination-meta-parameters.dto'
 
 export class PaginationMetaDto {
   @ApiProperty()
-  readonly page: number
+  readonly currentPage: number
 
   @ApiProperty()
-  readonly take: number
+  readonly perPage: number
 
   @ApiProperty()
-  readonly itemCount: number
+  readonly totalItems: number
 
   @ApiProperty()
-  readonly pageCount: number
+  readonly totalPage: number
 
   @ApiProperty()
   readonly hasPreviousPage: boolean
@@ -20,12 +20,12 @@ export class PaginationMetaDto {
   @ApiProperty()
   readonly hasNextPage: boolean
 
-  constructor({ paginationOptionsDto, itemCount }: PaginationParametersDto) {
-    this.take = paginationOptionsDto.take
-    this.page = paginationOptionsDto.page
-    this.itemCount = itemCount
-    this.pageCount = Math.ceil(this.itemCount / this.take)
-    this.hasPreviousPage = this.page > 1
-    this.hasNextPage = this.page < this.pageCount
+  constructor({ paginationOptionsDto, total }: PaginationParametersDto) {
+    this.perPage = paginationOptionsDto.perPage
+    this.currentPage = paginationOptionsDto.currentPage
+    this.totalItems = total
+    this.totalPage = Math.ceil(this.totalItems / this.perPage)
+    this.hasPreviousPage = this.currentPage > 1
+    this.hasNextPage = this.currentPage < this.totalPage
   }
 }

@@ -5,6 +5,11 @@ import { Prisma } from '@prisma/client'
 import { Order } from 'src/utils/constants'
 
 export class PaginationOptionsDto {
+  @ApiPropertyOptional({ default: '' })
+  @IsString()
+  @IsOptional()
+  search?: string = ''
+
   @ApiPropertyOptional({ enum: Prisma.SortOrder, default: Order.ASC })
   @IsEnum(Order)
   @IsOptional()
@@ -20,7 +25,7 @@ export class PaginationOptionsDto {
   @IsInt()
   @Min(1)
   @IsOptional()
-  page?: number = 1
+  currentPage?: number = 1
 
   @ApiPropertyOptional({ minimum: 1, maximum: 50, default: 10 })
   @Type(() => Number)
@@ -28,9 +33,9 @@ export class PaginationOptionsDto {
   @Min(1)
   @Max(50)
   @IsOptional()
-  take?: number = 1
+  perPage?: number = 10
 
   get skip(): number {
-    return (this.page - 1) * this.take
+    return (this.currentPage - 1) * this.perPage
   }
 }

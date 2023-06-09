@@ -10,13 +10,20 @@ import {
   UseGuards,
   HttpStatus,
   HttpCode,
+  Query,
 } from '@nestjs/common'
 import { CourseCategoryService } from './course-category.service'
 import {
+  CourseCategoryDto,
   CreateCourseCategoryDto,
   UpdateCourseCategoryDto,
 } from 'src/course-category/dto'
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger'
 import { GetUser } from 'src/auth/decorator'
 import { JWTAuthGuard } from 'src/auth/guard'
 import { AuthUser } from 'src/utils/types'
@@ -24,6 +31,8 @@ import { DeleteCategoriesDto } from 'src/course-category/dto/delete-categories.d
 import { UserRole } from 'src/utils/types/auth'
 import { RolesGuard } from 'src/role/guard'
 import { Roles } from 'src/role/decorator'
+import { PaginationOptionsDto } from 'src/shared/dto/pagination'
+import { ApiPaginatedResponse } from 'src/shared/decorator'
 
 @ApiTags('Course Categories')
 @Controller('course-categories')
@@ -35,6 +44,10 @@ export class CourseCategoryController {
   @ApiBearerAuth()
   @UseGuards(JWTAuthGuard, RolesGuard)
   @ApiOperation({ summary: 'Create Course Category' })
+  @ApiCreatedResponse({
+    description: 'Successfully created course category',
+    type: CourseCategoryDto,
+  })
   create(
     @GetUser('id') userId: number,
     @GetUser('roles') roles: UserRole[],
@@ -48,16 +61,20 @@ export class CourseCategoryController {
   }
 
   @Get()
-  findAll() {
-    return this.courseCategoryService.findAll()
+  @ApiOperation({ summary: 'Fetch All Course Categories' })
+  @ApiPaginatedResponse(CourseCategoryDto)
+  findAll(@Query() queryParams: PaginationOptionsDto) {
+    return this.courseCategoryService.findAll(queryParams)
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Fetch Course Category by id' })
   findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.courseCategoryService.findOne(+id)
+    return this.courseCategoryService.findOne(id)
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Update course category by id' })
   @ApiBearerAuth()
   @UseGuards(JWTAuthGuard, RolesGuard)
   update(
@@ -76,6 +93,7 @@ export class CourseCategoryController {
 
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete Course Category by id' })
   @ApiBearerAuth()
   @UseGuards(JWTAuthGuard, RolesGuard)
   remove(
@@ -87,12 +105,13 @@ export class CourseCategoryController {
 
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete()
+  @ApiOperation({ summary: 'Delete Many Course Categories by ids' })
   @ApiBearerAuth()
   @UseGuards(JWTAuthGuard, RolesGuard)
   removeMany(
     @GetUser() user: AuthUser,
-    @Body() categoryIds: DeleteCategoriesDto
+    @Body() categories: DeleteCategoriesDto
   ) {
-    return this.courseCategoryService.removeMany(user.id, categoryIds.ids)
+    return this.courseCategoryService.removeMany(user.id, categories.ids)
   }
 }

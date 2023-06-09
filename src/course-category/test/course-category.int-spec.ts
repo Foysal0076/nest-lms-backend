@@ -32,20 +32,20 @@ describe('Course Category integration tests', () => {
       title: 'Design',
     }
 
-    const courseCategoriesData: CreateCourseCategoryDto[] = [
-      {
-        title: 'Design',
-      },
-      {
-        title: 'Software Development',
-      },
-      {
-        title: 'Development',
-      },
-      {
-        title: 'Mental Health',
-      },
-    ]
+    // const courseCategoriesData: CreateCourseCategoryDto[] = [
+    //   {
+    //     title: 'Design',
+    //   },
+    //   {
+    //     title: 'Software Development',
+    //   },
+    //   {
+    //     title: 'Development',
+    //   },
+    //   {
+    //     title: 'Mental Health',
+    //   },
+    // ]
 
     // it.todo('should signin admin user')
     // it.todo('should create a new course category')
@@ -82,6 +82,7 @@ describe('Course Category integration tests', () => {
 
     // it.todo('should get all course categories by any user')
     // it.todo('should get course category by search query by any user')
+    // it.todo('should get empty course category by search query by any user with a query that is not in the database')
 
     it('should signin admin user', () => {
       return pactum
@@ -170,6 +171,28 @@ describe('Course Category integration tests', () => {
         })
         .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
         .expectStatus(HttpStatus.NO_CONTENT)
+    })
+
+    it('should get 404 Bad Request fail to delete multiple course categories with invalid category ids', () => {
+      return pactum
+        .spec()
+        .delete('/course-categories')
+        .withBody({
+          ids: ['$S{adminCourseCategoryId3}', 111, 222, 333],
+        })
+        .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+        .expectStatus(HttpStatus.NOT_FOUND)
+    })
+
+    it('should get 400 Not Found error to delete multiple course categories with empty category ids', () => {
+      return pactum
+        .spec()
+        .delete('/course-categories')
+        .withBody({
+          ids: [],
+        })
+        .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+        .expectStatus(HttpStatus.BAD_REQUEST)
     })
 
     it('should signin student user', () => {
@@ -278,6 +301,21 @@ describe('Course Category integration tests', () => {
       return pactum.spec().get('/course-categories').expectStatus(HttpStatus.OK)
     })
 
-    it.todo('should get course category by search query by any user')
+    it('should get course category by search query by any user', () => {
+      return pactum
+        .spec()
+        .get('/course-categories?search=3')
+        .expectStatus(HttpStatus.OK)
+      // .inspect()
+    })
+
+    it('should get empty course category array by search query by any user', () => {
+      return pactum
+        .spec()
+        .get('/course-categories?search=nothing')
+        .expectStatus(HttpStatus.OK)
+        .expectJsonLike({ results: [] })
+      // .inspect()
+    })
   })
 })
