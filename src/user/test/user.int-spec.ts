@@ -3,11 +3,18 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import { Test } from '@nestjs/testing'
 import * as pactum from 'pactum'
 import { INestApplication, ValidationPipe } from '@nestjs/common'
-import { SignupDto } from 'src/auth/dto'
 import { UpdateProfileDto, UpdateUserDto } from 'src/user/dto'
+import { TEST_USER_DATA, UPDATED_TEST_USER_DATA } from 'src/utils/constants'
 
 describe('User service integration tests', () => {
   let app: INestApplication
+
+  const updateProfileData: UpdateProfileDto = {
+    addressLine1: '1234 Test St',
+    city: 'Test City',
+    state: 'Test State',
+    zipCode: '12345',
+  }
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -16,43 +23,33 @@ describe('User service integration tests', () => {
     app = moduleRef.createNestApplication()
     app.useGlobalPipes(new ValidationPipe({ whitelist: true }))
     await app.init()
-    app.listen(3333)
+    await app.listen(3333)
     const prisma = app.get(PrismaService)
     await prisma.cleanDB()
+    await prisma.cleanTestUsers([
+      TEST_USER_DATA.email,
+      UPDATED_TEST_USER_DATA.email,
+    ])
     pactum.request.setBaseUrl('http://localhost:3333')
   })
 
   //teardown logic
-  afterAll(() => {
-    app.close()
+  afterAll(async () => {
+    await app.close()
   })
 
   describe('User Service', () => {
-    const signupData: SignupDto = {
-      email: 'testuser@test.com',
-      password: '1234',
-      firstName: 'Test',
-      lastName: 'User',
-    }
-
-    const updateProfileData: UpdateProfileDto = {
-      addressLine1: '1234 Test St',
-      city: 'Test City',
-      state: 'Test State',
-      zipCode: '12345',
-    }
-
     it('should signup user', async () => {
       return pactum
         .spec()
         .post('/auth/signup')
-        .withBody(signupData)
+        .withBody(TEST_USER_DATA)
         .expectStatus(201)
         .expectJsonLike({ accessToken: /.+/ })
     })
 
     const updateUserData: UpdateUserDto = {
-      email: 'update@email.com',
+      email: UPDATED_TEST_USER_DATA.email,
       password: 'UpdatedPassword',
     }
 
@@ -60,7 +57,10 @@ describe('User service integration tests', () => {
       return pactum
         .spec()
         .post('/auth/signin')
-        .withBody({ email: signupData.email, password: signupData.password })
+        .withBody({
+          email: TEST_USER_DATA.email,
+          password: TEST_USER_DATA.password,
+        })
         .expectStatus(200)
         .stores('accessToken', 'accessToken')
     })

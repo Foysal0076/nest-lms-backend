@@ -20,6 +20,14 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       where: {
         email: payload.email,
       },
+      include: {
+        roles: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+      },
     })
     delete user.password
     return user
