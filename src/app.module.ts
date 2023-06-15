@@ -8,6 +8,7 @@ import { ServeStaticModule } from '@nestjs/serve-static'
 import { join } from 'path'
 import { CourseCategoryModule } from './course-category/course-category.module'
 import { CourseLevelModule } from './course-level/course-level.module'
+import { CourseTagModule } from './course-tag/course-tag.module'
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { CourseLevelModule } from './course-level/course-level.module'
     UploadFileModule,
     CourseCategoryModule,
     CourseLevelModule,
+    CourseTagModule,
   ],
   controllers: [],
   providers: [],
