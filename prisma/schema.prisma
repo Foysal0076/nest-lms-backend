@@ -1,5 +1,11 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
+}
+
+generator prismaClassGenerator {
+  provider = "prisma-class-generator"
+  output   = "../src/generator/prisma-class"
 }
 
 datasource db {
@@ -8,8 +14,9 @@ datasource db {
 }
 
 model Permission {
-  id          Int     @id @default(autoincrement())
-  title       String  @unique
+  id          Int         @id @default(autoincrement())
+  title       TableAccess @default(READ)
+  table       String
   description String?
 
   roles Role[]
@@ -31,20 +38,22 @@ model Role {
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
-  email    String @unique
-  phone    String? @unique
+  id       Int     @id @default(autoincrement())
+  email    String  @unique
+  phone    String?
   password String
-
-  firstName String
-  lastName  String
 
   isVerified Boolean @default(false)
   isBlocked  Boolean @default(false)
   roles      Role[]
 
-  UserProfile UserProfile?
-  Login       Login[]
+  userProfile     UserProfile?
+  Login           Login[]
+  enrolledCourses Course[]     @relation("StudentCourse")
+  taughtCourses   Course[]     @relation("InstructorCourse")
+  completedUnits  Unit[]       @relation("CompletedUnit")
+
+  subscriptions Subscription[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -64,7 +73,7 @@ model UserProfile {
   zipCode      String?
   phone        String?
   dateOfBirth  DateTime?
-  gender       String
+  gender       String?
 
   userId Int  @unique
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade) //Delete user profile if user is deleted
@@ -73,14 +82,81 @@ model UserProfile {
   updatedAt DateTime @updatedAt
 }
 
+enum SubscriptionStatusType {
+  Active
+  Inactive
+  Cancelled
+  Pending
+  Suspended
+  Trial
+  PastDue
+  Free
+}
+
+model Subscription {
+  id          Int                    @id @default(autoincrement())
+  title       String                 @unique
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  nextBilling DateTime
+  status      SubscriptionStatusType
+
+  subscriptionProductId Int                 @unique
+  subscriptionProduct   SubscriptionProduct @relation(fields: [subscriptionProductId], references: [id], onDelete: Cascade)
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SubscriptionProductType {
+  id          Int     @id @default(autoincrement())
+  title       String  @unique
+  description String?
+
+  subscriptionProducts SubscriptionProduct[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SubscriptionProduct {
+  id           Int     @id @default(autoincrement())
+  title        String  @unique
+  description  String?
+  regularPrice Float
+  salePrice    Float?
+  isSiteWide   Boolean @default(false)
+
+  typeId Int
+  type   SubscriptionProductType @relation(fields: [typeId], references: [id])
+
+  courseProviderId Int?
+  courseProvider   CourseProvider? @relation(fields: [courseProviderId], references: [id])
+
+  subscriptions Subscription[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 enum VerificationType {
-  EMAIL
-  PHONE
+  Email
+  Phone
+}
+
+enum TableAccess {
+  READ
+  WRITE
+  DELETE
 }
 
 model VerificationRequest {
-  id         Int              @id @default(autoincrement())
-  type       VerificationType
+  id         Int               @id @default(autoincrement())
+  type       VerificationType? @default(Email)
   identifier String
   token      String
   expiresAt  DateTime
@@ -104,4 +180,293 @@ model Login {
   deviceModel    String?
   ipAddress      String?
   location       String?
+}
+
+model CourseCategory {
+  id            Int     @id @default(autoincrement())
+  title         String  @unique
+  slug          String  @unique
+  icon          String?
+  featuredImage String?
+  description   String?
+
+  createdById Int
+  courses     Course[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CourseLevel {
+  id          Int     @id @default(autoincrement())
+  title       String  @unique
+  description String?
+
+  createdById Int
+
+  course Course[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CourseTag {
+  id          Int     @id @default(autoincrement())
+  title       String  @unique
+  description String?
+
+  createdById Int
+
+  course Course[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Course {
+  id               Int     @id @default(autoincrement())
+  title            String  @unique
+  slug             String  @unique
+  shortDescription String?
+  longDescription  String?
+  whoIsFor         String?
+  prerequisite     String?
+  learningOutcome  String?
+  overview         String?
+  featuredImage    String?
+  validityInDays   Int?
+  regularPrice     Float?
+  salePrice        Float?
+  isFeatured       Boolean @default(false)
+  isPublished      Boolean @default(false)
+  isApproved       Boolean @default(false)
+  isDeleted        Boolean @default(false)
+  moduleOrder      String?
+
+  createdById      Int
+  courseProviderId Int
+  students         User[]           @relation("StudentCourse")
+  instructors      User[]           @relation("InstructorCourse")
+  categories       CourseCategory[]
+
+  tags           CourseTag[]
+  levels         CourseLevel[]
+  courseProvider CourseProvider @relation(fields: [courseProviderId], references: [id], onDelete: Cascade)
+
+  modules Module[]
+  Quiz    Quiz[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CourseProvider {
+  id               Int     @id @default(autoincrement())
+  name             String
+  icon             String?
+  featuredImage    String?
+  shortDescription String?
+  longDescription  String?
+  url              String?
+
+  courses              Course[]
+  subscriptionProducts SubscriptionProduct[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum CertificateType {
+  General
+  Diploma
+  Degree
+}
+
+model Certificate {
+  id            Int             @id @default(autoincrement())
+  title         String
+  type          CertificateType @default(General)
+  icon          String?
+  featuredImage String?
+  regularPrice  Float           @default(0)
+  salePrice     Float           @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ResourceType {
+  id          Int     @id @default(autoincrement())
+  title       String  @unique
+  icon        String
+  description String?
+
+  resource Resource[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Resource {
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String?
+  contentUrl  String
+  isDeleted   Boolean @default(false)
+  isFree      Boolean @default(false)
+
+  createdBy Int
+
+  resourceTypeId Int
+  resourceType   ResourceType @relation(fields: [resourceTypeId], references: [id])
+
+  unitId Int?
+  unit   Unit? @relation(fields: [unitId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UnitType {
+  id          Int     @id @default(autoincrement())
+  title       String  @unique
+  icon        String
+  description String?
+
+  unit Unit[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Unit {
+  id          Int     @id @default(autoincrement())
+  title       String
+  slug        String
+  description String?
+  videoUrl    String?
+  content     String
+  duration    Int
+  isPublished Boolean @default(false)
+  isDeleted   Boolean @default(false)
+  isFree      Boolean @default(false)
+
+  createdBy Int
+
+  unitTypeId Int
+  unitType   UnitType @relation(fields: [unitTypeId], references: [id])
+
+  moduleId Int?
+  module   Module? @relation(fields: [moduleId], references: [id])
+
+  quiz      Quiz?
+  resources Resource[]
+
+  completedBy User[] @relation("CompletedUnit")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Module {
+  id          Int     @id @default(autoincrement())
+  title       String
+  slug        String
+  description String?
+  isPublished Boolean @default(false)
+  isDeleted   Boolean @default(false)
+
+  units Unit[]
+
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model QuizType {
+  id          Int     @id @default(autoincrement())
+  title       String  @unique
+  description String?
+
+  quiz Quiz[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Quiz {
+  id             Int     @id @default(autoincrement())
+  title          String
+  slug           String
+  description    String?
+  duration       Int
+  totalMark      Int
+  passMark       Int
+  totalQuestions Int
+  isPublished    Boolean @default(false)
+  isDeleted      Boolean @default(false)
+
+  createdBy Int
+
+  quizTypeId Int
+  quizType   QuizType @relation(fields: [quizTypeId], references: [id])
+
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  unitId Int?  @unique
+  unit   Unit? @relation(fields: [unitId], references: [id])
+
+  quizQuestions QuizQuestion[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model QuizQuestionType {
+  id          Int     @id @default(autoincrement())
+  title       String  @unique
+  description String?
+
+  quizQuestions QuizQuestion[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model QuizQuestion {
+  id          Int     @id @default(autoincrement())
+  title       String
+  mark        Float   @default(1)
+  isPublished Boolean @default(true)
+  isDeleted   Boolean @default(false)
+
+  createdBy Int
+
+  quizQuestionTypeId Int
+  quizQuestionType   QuizQuestionType @relation(fields: [quizQuestionTypeId], references: [id])
+
+  quizzes     Quiz[]
+  quizOptions QuizQuestionOption[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model QuizQuestionOption {
+  id          Int     @id @default(autoincrement())
+  title       String
+  isCorrect   Boolean @default(false)
+  isPublished Boolean @default(true)
+  isDeleted   Boolean @default(false)
+
+  createdBy Int
+
+  quizQuestionId Int?
+  quizQuestion   QuizQuestion? @relation(fields: [quizQuestionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
