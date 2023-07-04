@@ -244,6 +244,10 @@ const studentForbiddenPermissions = [
     table: 'VerificationRequest',
     title: TableAccess.DELETE,
   },
+  {
+    table: 'BlogCategory',
+    title: TableAccess.DELETE,
+  },
 ]
 
 const instructorForbiddenPermissions = [
@@ -373,6 +377,10 @@ const instructorForbiddenPermissions = [
   },
   {
     table: 'VerificationRequest',
+    title: TableAccess.DELETE,
+  },
+  {
+    table: 'BlogCategory',
     title: TableAccess.DELETE,
   },
 ]

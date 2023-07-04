@@ -9,6 +9,7 @@ import { join } from 'path'
 import { CourseCategoryModule } from './course-category/course-category.module'
 import { CourseLevelModule } from './course-level/course-level.module'
 import { CourseTagModule } from './course-tag/course-tag.module'
+import { BlogCategoryModule } from 'src/blog-category/blog-category.module'
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { CourseTagModule } from './course-tag/course-tag.module'
     CourseCategoryModule,
     CourseLevelModule,
     CourseTagModule,
+    BlogCategoryModule,
   ],
   controllers: [],
   providers: [],
