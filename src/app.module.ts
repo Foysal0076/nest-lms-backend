@@ -10,6 +10,7 @@ import { CourseCategoryModule } from './course-category/course-category.module'
 import { CourseLevelModule } from './course-level/course-level.module'
 import { CourseTagModule } from './course-tag/course-tag.module'
 import { BlogCategoryModule } from 'src/blog-category/blog-category.module'
+import { BlogModule } from './blog/blog.module'
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { BlogCategoryModule } from 'src/blog-category/blog-category.module'
     CourseLevelModule,
     CourseTagModule,
     BlogCategoryModule,
+    BlogModule,
   ],
   controllers: [],
   providers: [],

@@ -39,7 +39,7 @@ export class BlogCategoryService {
       })
       return createdBlogCategory
     } catch (error) {
-      console.error(error)
+      // console.error(error)
       throw error
     }
   }
@@ -160,7 +160,7 @@ export class BlogCategoryService {
         },
       })
     } catch (error) {
-      console.error(error)
+      // console.error(error)
       throw error
     }
   }
@@ -216,7 +216,7 @@ export class BlogCategoryService {
         },
       })
     } catch (error) {
-      console.error(error)
+      // console.error(error)
       throw error
     }
   }

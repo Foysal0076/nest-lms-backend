@@ -47,7 +47,7 @@ export class UserService {
   async getUserProfile(userId: number): Promise<UserProfileDto> {
     try {
       const user = await this.prisma.userProfile.findUnique({
-        where: { id: userId },
+        where: { userId },
       })
       return new UserProfileDto(user)
     } catch (error) {

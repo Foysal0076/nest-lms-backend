@@ -58,6 +58,7 @@ model User {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   BlogComment BlogComment[]
+  Blog        Blog[]
 }
 
 model UserProfile {
@@ -496,9 +497,10 @@ model Blog {
   isPublished   Boolean   @default(false)
   publishedAt   DateTime?
 
-  createdById Int
-  categories  BlogCategory[]
-  comments    BlogComment[]
+  authorId   Int
+  author     User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  categories BlogCategory[]
+  comments   BlogComment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -509,10 +511,10 @@ model BlogComment {
   content   String
   isBlocked Boolean @default(false)
 
-  userId Int
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  blogId Int
-  blog   Blog @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  authorId Int
+  author   User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  blogId   Int
+  blog     Blog @relation(fields: [blogId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
