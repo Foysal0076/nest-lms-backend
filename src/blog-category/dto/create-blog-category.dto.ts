@@ -10,7 +10,7 @@ export class CreateBlogCategoryDto {
 
   @IsOptional()
   @IsString()
-  featuredImage?: number
+  featuredImage?: string
 
   @IsOptional()
   @IsString()

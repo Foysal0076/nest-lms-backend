@@ -29,7 +29,10 @@ import { BlogDto } from 'src/blog/dto'
 import { GetUser } from 'src/auth/decorator'
 import { UserRole } from 'src/utils/types/auth'
 import { ApiPaginatedResponse } from 'src/shared/decorator'
-import { FindAllBlogsQueryDto } from 'src/blog/dto/find-all-blog.dto'
+import {
+  FindAllBlogsQueryDto,
+  FindAllBlogsQueryPublicDto,
+} from 'src/blog/dto/find-all-blog.dto'
 
 @ApiTags('Blog ')
 @Controller('blogs')
@@ -56,7 +59,7 @@ export class BlogController {
   @ApiOperation({ summary: 'Fetch All Blogs' })
   @ApiPaginatedResponse(BlogDto)
   findAllPublished(
-    @Query() queries: FindAllBlogsQueryDto,
+    @Query() queries: FindAllBlogsQueryPublicDto,
     @GetUser() user: any
   ) {
     return this.blogService.findAllPublished(queries)
@@ -71,6 +74,7 @@ export class BlogController {
     @Query() queries: FindAllBlogsQueryDto,
     @GetUser('roles') roles: UserRole[]
   ) {
+    console.log(queries)
     const roleNames = roles.map((role) => role.title)
     return this.blogService.findAll(roleNames, queries)
   }

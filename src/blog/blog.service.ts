@@ -186,12 +186,18 @@ export class BlogService {
       where: {
         AND: [
           {
+            isPublished:
+              typeof isPublished === 'undefined'
+                ? undefined
+                : Boolean(isPublished),
+          },
+          {
             title: search && search.trim().length > 0 ? search : undefined,
           },
           {
-            categories: category && {
+            categories: {
               some: {
-                slug: category,
+                slug: category ? category : undefined,
               },
             },
           },
@@ -217,14 +223,20 @@ export class BlogService {
       where: {
         AND: [
           {
+            isPublished:
+              typeof isPublished === 'undefined'
+                ? undefined
+                : Boolean(isPublished),
+          },
+          {
             title: {
               search: search && search.length > 0 ? search : undefined,
             },
           },
           {
-            categories: category && {
+            categories: {
               some: {
-                slug: category,
+                slug: category ? category : undefined,
               },
             },
           },
