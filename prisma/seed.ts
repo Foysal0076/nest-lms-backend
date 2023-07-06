@@ -28,7 +28,7 @@ const ADMIN_DATA = {
 const INSTRUCTOR_DATA = {
   email: 'instructor@nestlms.com',
   password: 'password',
-  firstName: 'Admin',
+  firstName: 'Instructor',
   lastName: 'User',
   phone: '1234567890',
   isVerified: true,

@@ -107,9 +107,9 @@ export class BlogService {
             title: search && search.trim().length > 0 ? search : undefined,
           },
           {
-            categories: category && {
+            categories: {
               some: {
-                slug: category,
+                slug: category ? category : undefined,
               },
             },
           },
@@ -143,9 +143,9 @@ export class BlogService {
             },
           },
           {
-            categories: category && {
+            categories: {
               some: {
-                slug: category,
+                slug: category ? category : undefined,
               },
             },
           },
