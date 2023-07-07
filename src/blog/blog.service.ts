@@ -104,7 +104,9 @@ export class BlogService {
             isPublished: true,
           },
           {
-            title: search && search.trim().length > 0 ? search : undefined,
+            title: {
+              search: search && search.trim().length > 0 ? search : undefined,
+            },
           },
           {
             categories: {
@@ -139,7 +141,7 @@ export class BlogService {
           },
           {
             title: {
-              search: search && search.length > 0 ? search : undefined,
+              search: search && search.trim().length > 0 ? search : undefined,
             },
           },
           {
@@ -192,7 +194,9 @@ export class BlogService {
                 : Boolean(isPublished),
           },
           {
-            title: search && search.trim().length > 0 ? search : undefined,
+            title: {
+              search: search && search.trim().length > 0 ? search : undefined,
+            },
           },
           {
             categories: {
@@ -230,7 +234,7 @@ export class BlogService {
           },
           {
             title: {
-              search: search && search.length > 0 ? search : undefined,
+              search: search && search.trim().length > 0 ? search : undefined,
             },
           },
           {
