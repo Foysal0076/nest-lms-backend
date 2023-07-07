@@ -3,6 +3,7 @@ import {
   ClassSerializerInterceptor,
   Controller,
   Get,
+  ParseIntPipe,
   Patch,
   UseGuards,
   UseInterceptors,
@@ -32,7 +33,7 @@ export class UserController {
   @Get('profile')
   @ApiBearerAuth()
   @UseGuards(JWTAuthGuard)
-  async getProfile(@GetUser('id') userId: number) {
+  async getProfile(@GetUser('id', ParseIntPipe) userId: number) {
     return this.userService.getUserProfile(userId)
   }
 

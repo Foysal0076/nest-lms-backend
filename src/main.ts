@@ -5,7 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true })) // This will strip any fields in the request body that are not defined in the dto(data transfer object)
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true })) // This will strip any fields in the request body that are not defined in the dto(data transfer object)
 
   //Swagger setup
   const swaggerConfig = new DocumentBuilder()

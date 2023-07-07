@@ -8,6 +8,10 @@ import { ServeStaticModule } from '@nestjs/serve-static'
 import { join } from 'path'
 import { CourseCategoryModule } from './course-category/course-category.module'
 import { CourseLevelModule } from './course-level/course-level.module'
+import { CourseTagModule } from './course-tag/course-tag.module'
+import { BlogCategoryModule } from 'src/blog-category/blog-category.module'
+import { BlogModule } from './blog/blog.module'
+import { BlogCommentModule } from './blog-comment/blog-comment.module'
 
 @Module({
   imports: [
@@ -21,6 +25,10 @@ import { CourseLevelModule } from './course-level/course-level.module'
     UploadFileModule,
     CourseCategoryModule,
     CourseLevelModule,
+    CourseTagModule,
+    BlogCategoryModule,
+    BlogModule,
+    BlogCommentModule,
   ],
   controllers: [],
   providers: [],

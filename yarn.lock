@@ -5529,7 +5529,7 @@ pretty-format@^29.0.0, pretty-format@^29.5.0:
     ansi-styles "^5.0.0"
     react-is "^18.0.0"
 
-prisma-class-generator@^0.2.2:
+prisma-class-generator@^0.2.6:
   version "0.2.6"
   resolved "https://registry.yarnpkg.com/prisma-class-generator/-/prisma-class-generator-0.2.6.tgz#3b7771c611969a77cdef9b3368d07ed0b760467e"
   integrity sha512-GRsLrLqSQwO3eBNGGDSxPXEjQHPkT3Nh8t3ODUCwqoVOVDo7XTY//LecWNJAFM9AheMo6IbbzokwszMT1EQ7Xw==

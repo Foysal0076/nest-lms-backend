@@ -13,7 +13,7 @@ export const ADMIN_DATA = {
   firstName: 'Admin',
   lastName: 'User',
   phone: '1234567890',
-  isVerified: false,
+  isVerified: true,
 }
 
 export const INSTRUCTOR_DATA = {
@@ -22,7 +22,16 @@ export const INSTRUCTOR_DATA = {
   firstName: 'Admin',
   lastName: 'User',
   phone: '1234567890',
-  isVerified: false,
+  isVerified: true,
+}
+
+export const MODERATOR_DATA = {
+  email: 'moderator@nestlms.com',
+  password: 'password',
+  firstName: 'Moderator',
+  lastName: 'User',
+  phone: '1234567890',
+  isVerified: true,
 }
 
 export const TEST_USER_DATA = {
