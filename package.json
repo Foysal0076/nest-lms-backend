@@ -10,7 +10,7 @@
     "prepare": "husky install",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "check-types": "tsc --pretty --noEmit",
-    "start": "nest start",
+    "start": "node dist/src/main",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/src/main",
