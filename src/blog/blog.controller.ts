@@ -58,10 +58,7 @@ export class BlogController {
   @Get()
   @ApiOperation({ summary: 'Fetch All Blogs' })
   @ApiPaginatedResponse(BlogDto)
-  findAllPublished(
-    @Query() queries: FindAllBlogsQueryPublicDto,
-    @GetUser() user: any
-  ) {
+  findAllPublished(@Query() queries: FindAllBlogsQueryPublicDto) {
     return this.blogService.findAllPublished(queries)
   }
 
@@ -74,7 +71,6 @@ export class BlogController {
     @Query() queries: FindAllBlogsQueryDto,
     @GetUser('roles') roles: UserRole[]
   ) {
-    console.log(queries)
     const roleNames = roles.map((role) => role.title)
     return this.blogService.findAll(roleNames, queries)
   }

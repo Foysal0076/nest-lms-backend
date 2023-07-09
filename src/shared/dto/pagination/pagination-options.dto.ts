@@ -13,7 +13,7 @@ export class PaginationOptionsDto {
   @ApiPropertyOptional({ enum: Prisma.SortOrder, default: Order.ASC })
   @IsEnum(Order)
   @IsOptional()
-  order?: Prisma.SortOrder = Order.ASC
+  order?: Prisma.SortOrder = Order.DESC
 
   @ApiPropertyOptional({ default: 'createdAt' })
   @IsString()

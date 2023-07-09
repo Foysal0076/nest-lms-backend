@@ -10,7 +10,7 @@ import { UpdateBlogDto } from './dto/update-blog.dto'
 import { checkPermissionOnOthersData, generateSlug } from 'src/utils/helpers'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { BlogDto } from 'src/blog/dto'
-import { Blog, Prisma } from '@prisma/client'
+import { Blog, BlogCategory, Prisma } from '@prisma/client'
 import { ROLES_WITH_SPECIAL_PERMISSIONS } from 'src/utils/constants'
 import { PaginationDto, PaginationMetaDto } from 'src/shared/dto/pagination'
 import { FindAllBlogsQueryDto } from 'src/blog/dto/find-all-blog.dto'
@@ -65,6 +65,10 @@ export class BlogService {
                 select: {
                   firstName: true,
                   lastName: true,
+                  avatar: true,
+                  occupation: true,
+                  city: true,
+                  country: true,
                 },
               },
             },
@@ -111,7 +115,9 @@ export class BlogService {
           {
             categories: {
               some: {
-                slug: category ? category : undefined,
+                id: {
+                  in: category ? category : undefined,
+                },
               },
             },
           },
@@ -128,6 +134,21 @@ export class BlogService {
             featuredImage: true,
             createdAt: true,
             updatedAt: true,
+          },
+        },
+        author: {
+          select: {
+            email: true,
+            userProfile: {
+              select: {
+                firstName: true,
+                lastName: true,
+                avatar: true,
+                occupation: true,
+                city: true,
+                country: true,
+              },
+            },
           },
         },
       },
@@ -147,7 +168,9 @@ export class BlogService {
           {
             categories: {
               some: {
-                slug: category ? category : undefined,
+                id: {
+                  in: category ? category : undefined,
+                },
               },
             },
           },
@@ -201,7 +224,9 @@ export class BlogService {
           {
             categories: {
               some: {
-                slug: category ? category : undefined,
+                id: {
+                  in: category ? category : undefined,
+                },
               },
             },
           },
@@ -218,6 +243,12 @@ export class BlogService {
             featuredImage: true,
             createdAt: true,
             updatedAt: true,
+          },
+        },
+        author: {
+          select: {
+            email: true,
+            userProfile: true,
           },
         },
       },
@@ -240,7 +271,9 @@ export class BlogService {
           {
             categories: {
               some: {
-                slug: category ? category : undefined,
+                id: {
+                  in: category ? category : undefined,
+                },
               },
             },
           },
@@ -289,6 +322,23 @@ export class BlogService {
           where: {
             isBlocked: false,
           },
+          include: {
+            author: {
+              select: {
+                email: true,
+                userProfile: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                    avatar: true,
+                    occupation: true,
+                    city: true,
+                    country: true,
+                  },
+                },
+              },
+            },
+          },
         },
         author: {
           select: {
@@ -297,6 +347,10 @@ export class BlogService {
               select: {
                 firstName: true,
                 lastName: true,
+                avatar: true,
+                occupation: true,
+                city: true,
+                country: true,
               },
             },
           },
@@ -349,12 +403,7 @@ export class BlogService {
         author: {
           select: {
             email: true,
-            userProfile: {
-              select: {
-                firstName: true,
-                lastName: true,
-              },
-            },
+            userProfile: true,
           },
         },
       },
@@ -400,20 +449,30 @@ export class BlogService {
         throw new ForbiddenException('Forbidden resource')
       }
 
-      let slug: string = null
+      let slug: string
 
       if (updateBlogDto.title) {
         slug = generateSlug(updateBlogDto.title)
       }
-      const connectIds = updateBlogDto.categories.map((categoryId) => ({
-        id: categoryId,
-      }))
-      const disconnect = foundBlog.categories.filter(
-        (category) => !updateBlogDto.categories.includes(category.id)
-      )
-      const disconnectIds = disconnect.map((category) => ({
-        id: category.id,
-      }))
+
+      let disconnect: BlogCategory[]
+      let disconnectIds: { id: number }[] = []
+      let connectIds: { id: number }[] = []
+
+      if (updateBlogDto?.categories) {
+        connectIds = updateBlogDto.categories.map((categoryId) => ({
+          id: categoryId,
+        }))
+        disconnect = foundBlog.categories.filter(
+          (category) => !updateBlogDto.categories.includes(category.id)
+        )
+        disconnectIds = disconnect.map((category) => ({
+          id: category.id,
+        }))
+      }
+
+      const hasUpdateCategories =
+        connectIds.length > 0 || disconnectIds.length > 0
 
       const updatedBlog = await this.prisma.blog.update({
         where: {
@@ -424,10 +483,12 @@ export class BlogService {
           slug,
           content: updateBlogDto.content || foundBlog.content,
           featuredImage: updateBlogDto.featuredImage || foundBlog.featuredImage,
-          categories: {
-            connect: connectIds,
-            disconnect: disconnectIds,
-          },
+          categories: hasUpdateCategories
+            ? {
+                connect: connectIds,
+                disconnect: disconnectIds,
+              }
+            : undefined,
         },
         include: {
           categories: {
@@ -440,6 +501,12 @@ export class BlogService {
               featuredImage: true,
               createdAt: true,
               updatedAt: true,
+            },
+          },
+          author: {
+            select: {
+              email: true,
+              userProfile: true,
             },
           },
         },
@@ -523,6 +590,12 @@ export class BlogService {
       },
       include: {
         categories: true,
+        author: {
+          select: {
+            email: true,
+            userProfile: true,
+          },
+        },
       },
     })
     return publishedBlog
@@ -557,6 +630,12 @@ export class BlogService {
       },
       include: {
         categories: true,
+        author: {
+          select: {
+            email: true,
+            userProfile: true,
+          },
+        },
       },
     })
     return unPublishedBlog
