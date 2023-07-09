@@ -37,6 +37,7 @@ export class BlogCategoryService {
           createdById: userId,
         },
       })
+      delete createdBlogCategory.createdById
       return createdBlogCategory
     } catch (error) {
       // console.error(error)
@@ -77,6 +78,7 @@ export class BlogCategoryService {
         slug,
       },
     })
+    delete updatedBlogCategory.createdById
     return updatedBlogCategory
   }
 
@@ -134,6 +136,7 @@ export class BlogCategoryService {
     if (!foundBlogCategory) {
       throw new NotFoundException('Blog Category not found')
     }
+    delete foundBlogCategory.createdById
     return foundBlogCategory
   }
 

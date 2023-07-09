@@ -65,6 +65,10 @@ export class BlogService {
                 select: {
                   firstName: true,
                   lastName: true,
+                  avatar: true,
+                  occupation: true,
+                  city: true,
+                  country: true,
                 },
               },
             },
@@ -128,6 +132,21 @@ export class BlogService {
             featuredImage: true,
             createdAt: true,
             updatedAt: true,
+          },
+        },
+        author: {
+          select: {
+            email: true,
+            userProfile: {
+              select: {
+                firstName: true,
+                lastName: true,
+                avatar: true,
+                occupation: true,
+                city: true,
+                country: true,
+              },
+            },
           },
         },
       },
@@ -220,6 +239,12 @@ export class BlogService {
             updatedAt: true,
           },
         },
+        author: {
+          select: {
+            email: true,
+            userProfile: true,
+          },
+        },
       },
     })
 
@@ -289,6 +314,23 @@ export class BlogService {
           where: {
             isBlocked: false,
           },
+          include: {
+            author: {
+              select: {
+                email: true,
+                userProfile: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                    avatar: true,
+                    occupation: true,
+                    city: true,
+                    country: true,
+                  },
+                },
+              },
+            },
+          },
         },
         author: {
           select: {
@@ -297,6 +339,10 @@ export class BlogService {
               select: {
                 firstName: true,
                 lastName: true,
+                avatar: true,
+                occupation: true,
+                city: true,
+                country: true,
               },
             },
           },
@@ -349,12 +395,7 @@ export class BlogService {
         author: {
           select: {
             email: true,
-            userProfile: {
-              select: {
-                firstName: true,
-                lastName: true,
-              },
-            },
+            userProfile: true,
           },
         },
       },
@@ -442,6 +483,12 @@ export class BlogService {
               updatedAt: true,
             },
           },
+          author: {
+            select: {
+              email: true,
+              userProfile: true,
+            },
+          },
         },
       })
       return updatedBlog
@@ -523,6 +570,12 @@ export class BlogService {
       },
       include: {
         categories: true,
+        author: {
+          select: {
+            email: true,
+            userProfile: true,
+          },
+        },
       },
     })
     return publishedBlog
@@ -557,6 +610,12 @@ export class BlogService {
       },
       include: {
         categories: true,
+        author: {
+          select: {
+            email: true,
+            userProfile: true,
+          },
+        },
       },
     })
     return unPublishedBlog

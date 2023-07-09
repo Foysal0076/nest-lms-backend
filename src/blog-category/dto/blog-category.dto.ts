@@ -20,7 +20,7 @@ export class BlogCategoryDto {
   description?: string
 
   @ApiProperty({ type: Number })
-  createdById: number
+  createdById?: number
 
   @ApiProperty({ type: Date })
   createdAt: Date
