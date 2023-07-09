@@ -71,8 +71,9 @@ describe('Blog', () => {
         .expectBodyContains('React Development')
         .stores('blogCategory1Id', 'id')
         .stores('blogCategory1Slug', 'slug')
-        .inspect()
+      // .inspect()
     })
+
     it('should create blog category, by admin user', () => {
       return pactum
         .spec()
@@ -92,6 +93,21 @@ describe('Blog', () => {
         .expectStatus(HttpStatus.CREATED)
         .expectBodyContains('Javascript')
         .stores('blogCategory3Id', 'id')
+    })
+
+    it('should get error to create blog with empty title/content , by admin user', () => {
+      return pactum
+        .spec()
+        .post('/blogs')
+        .withHeaders({ Authorization: 'Bearer $S{adminAccessToken}' })
+        .withBody({
+          title: 'a',
+          content: 'b',
+          featuredImage: '',
+          categories: [],
+        })
+        .expectStatus(HttpStatus.BAD_REQUEST)
+        .inspect()
     })
 
     it('should create a blog', () => {
@@ -138,7 +154,7 @@ describe('Blog', () => {
           categories: ['$S{blogCategory2Id}'],
         })
         .expectStatus(HttpStatus.BAD_REQUEST)
-        .inspect()
+      // .inspect()
     })
 
     it('should update blog', () => {
@@ -154,7 +170,7 @@ describe('Blog', () => {
         })
         .expectStatus(HttpStatus.OK)
         .expectBodyContains('Admin Blog Updated')
-        .inspect()
+      // .inspect()
     })
 
     it('should delete a blog by id', () => {
@@ -271,7 +287,7 @@ describe('Blog', () => {
         })
         .expectStatus(HttpStatus.OK)
         .expectBodyContains('Student Blog Updated')
-        .inspect()
+      // .inspect()
     })
     it('should delete blog', () => {
       return pactum
@@ -347,7 +363,7 @@ describe('Blog', () => {
         })
         .expectStatus(HttpStatus.OK)
         .expectBodyContains('Instructor Blog Updated')
-        .inspect()
+      // .inspect()
     })
     it('should delete blog', () => {
       return pactum
@@ -574,7 +590,7 @@ describe('Blog', () => {
         .withHeaders('Authorization', 'Bearer $S{adminAccessToken}')
         .expectStatus(HttpStatus.OK)
         .expectBodyContains('Student Blog 3')
-        .inspect()
+      // .inspect()
     })
   })
 })
