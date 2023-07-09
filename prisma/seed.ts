@@ -1,4 +1,4 @@
-import { BlogCategory, PrismaClient, TableAccess } from '@prisma/client'
+import { PrismaClient, TableAccess } from '@prisma/client'
 import * as argon from 'argon2'
 
 const prisma = new PrismaClient()
@@ -916,6 +916,7 @@ async function main() {
         content: blogPost.content,
         featuredImage: blogPost.featuredImage,
         isPublished: blogPost.isPublished,
+        publishedAt: blogPost.isPublished ? new Date() : null,
         categories: {
           connect: blogPost.categories.map((categoryId) => ({
             id: categoryId + firstCategoryId,
@@ -938,6 +939,7 @@ async function main() {
         content: blogPost.content,
         featuredImage: blogPost.featuredImage,
         isPublished: blogPost.isPublished,
+        publishedAt: blogPost.isPublished ? new Date() : null,
         categories: {
           connect: blogPost.categories.map((categoryId) => ({
             id: categoryId + firstCategoryId,
@@ -960,6 +962,7 @@ async function main() {
         content: blogPost.content,
         featuredImage: blogPost.featuredImage,
         isPublished: blogPost.isPublished,
+        publishedAt: blogPost.isPublished ? new Date() : null,
         categories: {
           connect: blogPost.categories.map((categoryId) => ({
             id: categoryId + firstCategoryId,
