@@ -535,7 +535,7 @@ describe('Blog', () => {
     it('should get published blogs by anyone for specific category/ies', () => {
       return pactum
         .spec()
-        .get('/blogs?category=$S{blogCategory1Slug}')
+        .get('/blogs?category=$S{blogCategory1Id}')
         .expectStatus(HttpStatus.OK)
         .expectJsonLike({ results: [] })
         .expectJsonLike({ meta: { totalItems: 2 } })
